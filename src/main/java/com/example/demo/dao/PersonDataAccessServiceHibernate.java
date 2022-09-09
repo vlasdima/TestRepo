@@ -77,28 +77,31 @@ public class PersonDataAccessServiceHibernate implements PersonDao {
         em.createQuery(sql).setParameter(1,id).executeUpdate();
         em.getTransaction().commit();
         em.close();
-        return 0;
+        return 1;
     }
 
     @Override
     public int updatePersonById(UUID id, Person person) {
-        try {
-            em = db.getEntityManager();
-            EntityTransaction t = em.getTransaction();
-            t.begin();
-            Person personToUpdate = selectPersonById(id).orElse(null);
-            personToUpdate.setName(person.getName());
-            t.commit();
-            em.close();
-        }catch (Exception e){
 
-            System.out.println("Error in Update");
-            e.printStackTrace();
-            return -1;
-        } finally {
+        Person personToUpdate = selectPersonById(id).orElse(null);
+        if (personToUpdate != null){
+            final String sql = "update Person set name=?2 where id=?1";
+            em= db.getEntityManager();
+            em.getTransaction().begin();
+            em.createQuery(sql)
+                    .setParameter(1,id)
+                    .setParameter(2,person.getName())
+                    .executeUpdate();
+            em.getTransaction().commit();
             em.close();
+        }else{
+            System.out.print("No persons with this id");
+            return -1;
         }
-        return 1;
+
+
+
+    return 1;
     }
 
 }
